@@ -7,7 +7,6 @@ app.use(bodyParser.json());
 
 const HTTP_OK_STATUS = 200;
 const PORT = '3000';
-const takersList = './talker.json';
 
 // não remova esse endpoint, e para o avaliador funcionar
 app.get('/', (_request, response) => {
@@ -15,14 +14,13 @@ app.get('/', (_request, response) => {
 });
 
 // Requisito 01
-app.get('/talker', (_req, res) => {
-  fs.readFile(takersList).then((response) => {
-    const talkers = JSON.parse(response);
+app.get('/talker', async (_req, res) => {
+  const readFile = await fs.readFile('./talker.json');
+  const talkers = JSON.parse(readFile);  
 
     if (!talkers) return res.status(HTTP_OK_STATUS).json([]);
     return res.status(HTTP_OK_STATUS).json(talkers);
   });
-});
 
 app.listen(PORT, () => {
   console.log('Online');
