@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs').promises;
 const token = require('random-token');
+const validator = require('email-validator');
 
 const app = express();
 app.use(bodyParser.json());
@@ -39,15 +40,32 @@ app.get('/talker/:id', async (req, res) => {
 });
 
 // Requisito 03
-// Referência : https://www.npmjs.com/package/random-token
+// Referências : 
+// Gerador de token :
+// https://www.npmjs.com/package/random-token
+// Validador de emails :
+// https://www.npmjs.com/package/email-validator
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
+  const validEmail = validator.validate(email);
   const newToken = token(16);
-  if (!email || !password) {
-    return res.status(404).json({ message: 'Usuário ou Senha inválidos' });
+
+  if (!email) {
+    return res.status(400).json({ message: 'O campo "email" é obrigatório' });
+  }
+  if (!password) {
+    return res.status(400).json({ message: 'O campo "password" é obrigatório' });
+  }
+  if (password.length < 6) {
+    return res.status(400).json({ message: 'O "password" deve ter pelo menos 6 caracteres' });
+  }
+  if (!validEmail) {
+    return res.status(400).json({ message: 'O "email" deve ter o formato "email@email.com"' });
   }
   return res.status(200).json({ token: newToken });
 });
+
+app.post('/login');
 
 app.listen(PORT, () => {
   console.log('Online');
