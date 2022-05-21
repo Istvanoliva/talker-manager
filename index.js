@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs').promises;
+const token = require('random-token');
 
 const app = express();
 app.use(bodyParser.json());
@@ -34,7 +35,18 @@ app.get('/talker/:id', async (req, res) => {
       message: 'Pessoa palestrante não encontrada',
     });
   }
-  res.status(HTTP_OK_STATUS).json(talkerId);
+  return res.status(HTTP_OK_STATUS).json(talkerId);
+});
+
+// Requisito 03
+// Referência : https://www.npmjs.com/package/random-token
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+  const newToken = token(16);
+  if (!email || !password) {
+    return res.status(404).json({ message: 'Usuário ou Senha inválidos' });
+  }
+  return res.status(200).json({ token: newToken });
 });
 
 app.listen(PORT, () => {
