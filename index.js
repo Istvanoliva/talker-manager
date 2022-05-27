@@ -85,6 +85,22 @@ ageValidator, talkerValidator, dateValidator, async (req, res) => {
   return res.status(HTTP_CREATED_STATUS).json({ id, ...body });
   });
 
+// Requisito 06
+app.put('/talker/:id', tokenValidator, nameValidator,
+ageValidator, talkerValidator, dateValidator, async (req, res) => {
+  const { name, age, talk } = req.body;
+  const { id } = req.params;
+  const idNumber = Number(id);
+  const talkersList = JSON.parse(await fs.readFile('./talker.json'));
+  const putTalker = talkersList.findIndex((tal) => tal.id === idNumber);
+  talkersList[putTalker] = { ...talkersList[putTalker], name, age, talk };
+
+  await fs.writeFile('./talker.json',
+  JSON.stringify([...talkersList, { id: idNumber, name, age, talk }]));
+  
+  return res.status(200).json({ name, id: idNumber, age, talk });
+});
+
 app.listen(PORT, () => {
   console.log('Online');
 });
