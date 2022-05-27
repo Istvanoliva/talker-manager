@@ -4,6 +4,7 @@ const fs = require('fs').promises;
 const token = require('random-token');
 const validator = require('email-validator');
 
+const { query } = require('express');
 const tokenValidator = require('./middlewares/tokenValidator');
 const nameValidator = require('./middlewares/nameValidator');
 const ageValidator = require('./middlewares/ageValidator');
@@ -27,18 +28,26 @@ app.get('/', (_request, response) => {
 });
 
 // Requisito 01
-app.get('/talker', async (_req, res) => {
-  // const readFile = await fs.readFile('./talker.json');
-  // const talkers = JSON.parse(readFile);  
+app.get('/talker', async (_req, res) => { 
   const talkers = await getTalkers();
     if (!talkers) return res.status(HTTP_OK_STATUS).json([]);
     return res.status(HTTP_OK_STATUS).json(talkers);
   });
 
+// Requisito 08
+app.get('/talker/search', tokenValidator, async (req, res) => {
+  const { q } = req.query;
+  const talkers = await getTalkers();
+
+  if (!query) return res.status(HTTP_OK_STATUS).json(talkers);
+
+  const filterList = talkers.filter((talk) => talk.name.includes(q));
+
+  return res.status(HTTP_OK_STATUS).json(filterList);
+});
+
 // Requisito 02
 app.get('/talker/:id', async (req, res) => {
-  // const readFile = await fs.readFile('./talker.json');
-  // const talkers = JSON.parse(readFile);
   const talkers = await getTalkers();
   const talkerId = talkers.find((talker) => talker.id === Number(req.params.id));
 
@@ -80,12 +89,10 @@ app.post('/login', (req, res) => {
 app.post('/talker', tokenValidator, nameValidator,
 ageValidator, talkerValidator, dateValidator, async (req, res) => {
   const { body } = req;
-  // const talkersList = JSON.parse(await fs.readFile('./talker.json'));
   const talkersList = await getTalkers();
   const id = talkersList.length + 1;
   talkersList.push({ id, ...body });
 
-  // await fs.writeFile('./talker.json', JSON.stringify(talkersList));
   putTalkers(talkersList);
   return res.status(HTTP_CREATED_STATUS).json({ id, ...body });
   });
@@ -116,8 +123,6 @@ app.delete('/talker/:id', tokenValidator, async (req, res) => {
 
   res.status(HTTP_DELETED_STATUS).end();
 });
-
-// Requisito 08
 
 app.listen(PORT, () => {
   console.log('Online');
