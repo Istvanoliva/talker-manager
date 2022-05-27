@@ -17,6 +17,7 @@ const HTTP_OK_STATUS = 200;
 const HTTP_ERROR_STATUS = 404;
 // const HTTP_NOT_AUT = 401;
 const HTTP_CREATED_STATUS = 201;
+const HTTP_DELETED_STATUS = 204;
 const PORT = '3000';
 
 // não remova esse endpoint, e para o avaliador funcionar
@@ -99,6 +100,17 @@ ageValidator, talkerValidator, dateValidator, async (req, res) => {
   JSON.stringify([...talkersList, { id: idNumber, name, age, talk }]));
   
   return res.status(200).json({ name, id: idNumber, age, talk });
+});
+
+// Requisito 07
+app.delete('/talker/:id', tokenValidator, async (req, res) => {
+  const { id } = req.params;
+  const talkersList = JSON.parse(await fs.readFile('./talker.json'));
+  const newList = talkersList.filter((tal) => tal.id !== id);
+  await fs.writeFile('./talker.json',
+  JSON.stringify([newList]));
+
+  res.status(HTTP_DELETED_STATUS).end();
 });
 
 app.listen(PORT, () => {
